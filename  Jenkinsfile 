@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    environment {
+        
+        DOCKERHUB_CREDENTIALS = credentials('rymdocker')
+    }
+    stages {
+        stage('Checkout'){
+            agent any
+            steps{
+                
+                git branch: 'main', url:'https://github.com/rymrayem/ProjectDevops-nodeJs.git'
+            }
+        }
+        stage('Init'){
+            steps{
+                
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        stage('Build'){
+            steps {
+                
+               sh 'docker build -t rymkrayem/projectdevops-nodejs:$BUILD_ID -f ./Dockerfile .'
+               
+            }
+        }
+        stage('Deliver'){
+            steps {
+                
+                sh 'docker push rymkrayem/projectdevops-nodejs:$BUILD_ID'
+            }
+        }
+        stage('Cleanup'){
+            steps {
+            
+            sh 'docker rmi rymkrayem/projectdevops-nodejs:$BUILD_ID'
+            sh 'docker logout'
+            }
+        }
+    }
+}
